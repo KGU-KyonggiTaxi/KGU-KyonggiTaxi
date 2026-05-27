@@ -57,16 +57,6 @@
       text-align: left;
     }
 
-    .mascot {
-      position: absolute;
-      top: -10px;
-      right: 150px;
-      width: 105px;
-      height: 180px;
-      background-size: cover;
-      pointer-events: none;
-    }
-
     /* ── 방 정보 카드 ── */
     .room-info-card {
       background: white;
@@ -285,143 +275,222 @@
   </style>
 </head>
 <body>
-<div class="app">
+  <div class="app">
 
-  <!-- 네비바 -->
-  <div class="navbar">
-    <button class="back-btn" onclick="window.location.href='mainPage.html'">
-      <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
-    </button>
-    <div class="nav-title">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;대 기 실</div>
-    <img class="mascot" src="images/기룡.png" alt="기룡이">
+    <!-- 네비바 -->
+    <div class="navbar">
+      <button class="back-btn" onclick="window.location.href='mainPage.html'">
+        <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+      </button>
+      <div class="nav-title">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;대 기 실</div>
+    </div>
+
+    <!-- 방 정보 카드 -->
+    <div class="room-info-card">
+      <div class="room-info-title" style="display:flex; justify-content:space-between; align-items:center;">
+          <span>🚕 방 정보</span>
+          <span class="info-badge" id="infoRoomName"></span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">경 로</span>
+        <span class="info-value" id="infoRoute">불러오는 중...</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">계 좌</span>
+        <span class="info-value" id="infoAccount">-</span>
+      </div>
+      <div class="info-row">
+          <span class="info-label">인 원</span>
+          <span class="info-value" id="infoCount">-</span>
+      </div>
+    </div>
+
+    <!-- 멤버 카드 -->
+    <div class="card">
+      <div class="card-header">👥 택티 후보</div>
+      <div class="user-list" id="userList"></div>
+      <div id="emptyMessage" class="empty-message">아직 대기 중인 택티가 없습니다 🚕</div>
+    </div>
+
+    <!-- 하단 버튼 -->
+    <div class="bottom-area">
+      <button class="chat-btn" onclick="window.location.href='chatPage.html'">채 팅 방</button>
+      <button class="confirm-btn" onclick="openModal()">택티 선택</button>
+    </div>
+
   </div>
 
-  <!-- 방 정보 카드 -->
-  <div class="room-info-card">
-    <div class="room-info-title" style="display:flex; justify-content:space-between; align-items:center;">
-        <span>🚕 방 정보</span>
-        <span class="info-badge" id="infoRoomName"></span>
-    </div>
-    <div class="info-row">
-      <span class="info-label">경 로</span>
-      <span class="info-value" id="infoRoute">불러오는 중...</span>
-    </div>
-    <div class="info-row">
-      <span class="info-label">계 좌</span>
-      <span class="info-value" id="infoAccount">-</span>
-    </div>
-    <div class="info-row">
-        <span class="info-label">인 원</span>
-        <span class="info-value" id="infoCount">-</span>
+  <!-- 탑승 확인 모달 -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <h3>🚕 택티 확인</h3>
+      <p>택티로<br>선택 하시겠습니까?</p>
+      <div class="modal-btns">
+        <button class="btn-cancel" onclick="closeModal()">취소</button>
+        <button class="btn-confirm" onclick="confirmBoarding()">확인</button>
+      </div>
     </div>
   </div>
 
-  <!-- 멤버 카드 -->
-  <div class="card">
-    <div class="card-header">👥 택티 후보</div>
-    <div class="user-list" id="userList"></div>
-    <div id="emptyMessage" class="empty-message">아직 대기 중인 택티가 없습니다 🚕</div>
-  </div>
+  <div class="toast" id="toast"></div>
 
-  <!-- 하단 버튼 -->
-  <div class="bottom-area">
-    <button class="chat-btn" onclick="window.location.href='chatPage.html'">채 팅 방</button>
-    <button class="confirm-btn" onclick="openModal()">택티 선택</button>
-  </div>
+  <script>
+    const store = {
+        get: (k) => { try { return localStorage.getItem(k); } catch(e) { return null; } },
+        set: (k, v) => { try { localStorage.setItem(k, v); } catch(e) {} },
+        remove: (k) => { try { localStorage.removeItem(k); } catch(e) {} }
+    };
+    const personIcon = '<svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>';
+    const checkIcon  = '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>';
 
-</div>
+    let room = null;
+    let users = [];
 
-<!-- 탑승 확인 모달 -->
-<div class="modal-overlay" id="modalOverlay">
-  <div class="modal">
-    <h3>🚕 택티 확인</h3>
-    <p>택티로<br>선택 하시겠습니까?</p>
-    <div class="modal-btns">
-      <button class="btn-cancel" onclick="closeModal()">취소</button>
-      <button class="btn-confirm" onclick="confirmBoarding()">확인</button>
-    </div>
-  </div>
-</div>
+    function getCurrentRoom() {
+      return room;
+    }
 
-<div class="toast" id="toast"></div>
+    function updateRoomInfo() {
+      if (!room) return;
+      document.getElementById('infoRoute').textContent   = (room.from || '?') + '  →  ' + (room.to || '?');
+      document.getElementById('infoAccount').textContent = (room.bank ? room.bank + '  ' : '') + (room.account || '미설정');
+      document.getElementById('infoCount').textContent   = (room.cur || 1) + '명 / ' + (room.max || 4) + '명';
+      document.getElementById('infoRoomName').textContent = room.name || '';
+      const isHost = (store.get('nickname') || '') === room.host;
+      document.querySelector('.chat-btn').style.display = isHost ? 'block' : 'none';
+      document.querySelector('.confirm-btn').style.display = isHost ? 'block' : 'none';
+    }
 
-<script>
-  const personIcon = '<svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>';
-  const checkIcon  = '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>';
+    function render() {
+      const list  = document.getElementById('userList');
+      const empty = document.getElementById('emptyMessage');
+      list.innerHTML = '';
+      if (users.length === 0) { empty.style.display = 'block'; return; }
+      empty.style.display = 'none';
+      users.filter(u => u.id !== room.host).forEach((u, i) => {
+        const isHost = room && u.id === room.host;
+        const row = document.createElement('div');
+        row.className = 'user-row';
+        const isSelf = u.id === (store.get('nickname') || '');
+        row.innerHTML =
+            '<div class="avatar">' + personIcon + '</div>' +
+            '<div class="user-name">' + u.id + '</div>' +
+            (u.id === room.host ? '<span class="host-badge">택터</span>' : '') +
+            (isHost && !isSelf ? '<button type="button" class="check-btn ' + (u.checked ? 'on' : 'off') + '" onclick="toggle(event,' + i + ')">' + checkIcon + '</button>' : '');
+      list.appendChild(row);
+      });
+    }
 
-  function getCurrentRoom() {
-    const roomId = localStorage.getItem('currentRoomId');
-    const rooms = JSON.parse(localStorage.getItem('rooms') || '[]');
-    return rooms.find(r => String(r.id) === String(roomId)) || null;
-  }
+    function toggle(e, i) {
+      e.stopPropagation();
+      users[i].checked = !users[i].checked;
+      render();
+    }
 
-  const currentUser = localStorage.getItem('nickname') || '사용자';
-  let room = getCurrentRoom();
-  let users = room ? (room.members || []).map(m => ({ id: m, checked: false })) : [];
-  const isHost = (localStorage.getItem('nickname') || '') === (room && room.host);
+    function openModal() {
+      const selected = users.filter(u => u.checked);
+      if (selected.length === 0) { showToast('함께 탑승할 택티를 선택해주세요'); return; }
+      document.getElementById('modalOverlay').classList.add('open');
+    }
+    function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
 
-  function updateRoomInfo() {
-    if (!room) return;
-    document.getElementById('infoRoute').textContent   = (room.from || '?') + '  →  ' + (room.to || '?');
-    document.getElementById('infoAccount').textContent = (room.bank ? room.bank + '  ' : '') + (room.account || '미설정');
-    document.getElementById('infoCount').textContent   = (room.cur || 1) + '명 / ' + (room.max || 4) + '명';
-    document.getElementById('infoRoomName').textContent = room.name || '';
-    const isHost = (localStorage.getItem('nickname') || '') === room.host;
-    document.querySelector('.chat-btn').style.display = isHost ? 'block' : 'none';
-    document.querySelector('.confirm-btn').style.display = isHost ? 'block' : 'none';
-  }
+    async function confirmBoarding() {
+      const selected = users.filter(u => u.checked).map(u => u.id);
 
-  function render() {
-    const list  = document.getElementById('userList');
-    const empty = document.getElementById('emptyMessage');
-    list.innerHTML = '';
-    if (users.length === 0) { empty.style.display = 'block'; return; }
-    empty.style.display = 'none';
-    users.filter(u => u.id !== room.host).forEach((u, i) => {
-      const isHost = room && u.id === room.host;
-      const row = document.createElement('div');
-      row.className = 'user-row';
-      const isSelf = u.id === (localStorage.getItem('nickname') || '');
-      row.innerHTML =
-          '<div class="avatar">' + personIcon + '</div>' +
-          '<div class="user-name">' + u.id + '</div>' +
-          (u.id === room.host ? '<span class="host-badge">택터</span>' : '') +
-          (isHost && !isSelf ? '<button type="button" class="check-btn ' + (u.checked ? 'on' : 'off') + '" onclick="toggle(event,' + i + ')">' + checkIcon + '</button>' : '');
-    list.appendChild(row);
+      if (selected.length === 0) {
+        showToast('선택된 택티가 없습니다');
+        return;
+      }
+
+      const currentMembers = room.members || [];
+      const newMembers = [...new Set([...currentMembers, ...selected])];
+
+      if (newMembers.length > room.max) {
+        showToast(`최대 ${room.max}명까지 입장 가능합니다`);
+        closeModal();
+        return;
+      }
+
+      await updateDoc(doc(db, "rooms", room.id), {
+        members: newMembers,
+        cur: newMembers.length
+      });
+
+      try { store.set('currentRoomId', room.id); } catch(e) {}
+      closeModal();
+      showToast('택티 선택 확인! 채팅방으로 이동합니다');
+      setTimeout(() => { window.location.href = 'chatPage.html'; }, 900);
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2200);
+    }
+
+    document.getElementById('modalOverlay').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
     });
-  }
+  </script>
 
-  function toggle(e, i) {
-    e.stopPropagation();
-    users[i].checked = !users[i].checked;
-    render();
-  }
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 
-  function openModal() {
-    const selected = users.filter(u => u.checked);
-    if (selected.length === 0) { showToast('함께 탑승할 택티를 선택해주세요'); return; }
-    document.getElementById('modalOverlay').classList.add('open');
-  }
-  function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      getDocs,
+      onSnapshot,
+      doc,
+      updateDoc,
+      deleteDoc
+    } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
-  function confirmBoarding() {
-    closeModal();
-    showToast('택티 선택 확인! 채팅방으로 이동합니다');
-    setTimeout(() => { window.location.href = 'chatPage.html'; }, 900);
-  }
+    const firebaseConfig = {
+      apiKey: "AIzaSyDvFEypLTMRwfRMcnQaBQevFAKHMu-zsbc",
+      authDomain: "kyonggitaxi.firebaseapp.com",
+      projectId: "kyonggitaxi",
+      storageBucket: "kyonggitaxi.firebasestorage.app",
+      messagingSenderId: "518555765082",
+      appId: "1:518555765082:web:34eee83ec31369d00d0b63",
+      measurementId: "G-30G3VDXZVV"
+    };
 
-  function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg; t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2200);
-  }
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-  document.getElementById('modalOverlay').addEventListener('click', function(e) {
-    if (e.target === this) closeModal();
-  });
+    window.db = db;
+    window.collection = collection;
+    window.addDoc = addDoc;
+    window.getDocs = getDocs;
+    window.onSnapshot = onSnapshot;
+    window.doc = doc;
+    window.updateDoc = updateDoc;
+    window.deleteDoc = deleteDoc;
 
-  updateRoomInfo();
-  render();
-</script>
+    const roomId = store.get('currentRoomId');
+
+    onSnapshot(doc(db, "rooms", roomId), (docSnap) => {
+      if (!docSnap.exists()) {
+        alert('방 정보를 찾을 수 없습니다.');
+        window.location.href = 'mainPage.html';
+        return;
+      }
+
+      room = {
+        id: docSnap.id,
+        ...docSnap.data()
+      };
+
+      users = (room.members || []).map(m => ({
+        id: m,
+        checked: false
+      }));
+
+      updateRoomInfo();
+      render();
+    });
+  </script>
 </body>
 </html>
