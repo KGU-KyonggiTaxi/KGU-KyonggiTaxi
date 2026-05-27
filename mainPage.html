@@ -310,30 +310,17 @@
       if(e.target===this) closeProfileModal();
     });
 
-    render();
-
-    let rooms = [];
-
     window.rooms = [];
 
     function getRooms() {
-      return window.rooms || [];
+    return window.rooms || [];
     }
+
+    window.render = render;
 
     render();
 
-    onSnapshot(collection(db, "rooms"), (snapshot) => {
-      rooms = [];
 
-      snapshot.forEach((doc) => {
-        rooms.push({
-          id: doc.id,
-          ...doc.data()
-        });
-      });
-
-      window.render();
-    });
   </script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
