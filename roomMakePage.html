@@ -339,6 +339,8 @@
         name: title,
         from: document.getElementById('roomFrom').value.trim() || '출발지',
         to: document.getElementById('roomTo').value.trim() || '도착지',
+        fromLat: selectedFromLat,
+        fromLng: selectedFromLng,
         account: account,
         bank:bank,
         max: people,
@@ -381,6 +383,10 @@
       position: mapOption.center
     });
 
+    // 선택된 출발지 좌표 (Firestore에 저장)
+    let selectedFromLat = mapOption.center.getLat();
+    let selectedFromLng = mapOption.center.getLng();
+
     marker.setMap(map);
 
     const geocoder = new kakao.maps.services.Geocoder();
@@ -390,6 +396,10 @@
 
       marker.setPosition(latlng);
       map.setCenter(latlng);
+
+      // 클릭 좌표 저장
+      selectedFromLat = latlng.getLat();
+      selectedFromLng = latlng.getLng();
 
       geocoder.coord2Address(latlng.getLng(), latlng.getLat(), function(result, status) {
         if (status === kakao.maps.services.Status.OK) {
@@ -415,6 +425,10 @@
 
           map.setCenter(coords);
           marker.setPosition(coords);
+
+          // 검색된 장소 좌표 저장
+          selectedFromLat = parseFloat(place.y);
+          selectedFromLng = parseFloat(place.x);
         }
         else{
           alert('출발지를 찾을 수 없습니다.');
@@ -431,6 +445,10 @@
 
         map.setCenter(currentPos);
         marker.setPosition(currentPos);
+
+        // 현재 위치 좌표 저장
+        selectedFromLat = lat;
+        selectedFromLng = lng;
 
         geocoder.coord2Address(lng, lat, function(result, status) {
           if (status === kakao.maps.services.Status.OK) {
