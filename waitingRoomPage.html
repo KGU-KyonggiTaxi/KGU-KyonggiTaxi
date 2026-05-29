@@ -389,7 +389,8 @@
       const nonHostUsers = users.filter(u => u.id !== room.host);
       if (nonHostUsers.length === 0) { empty.style.display = 'block'; return; }
       empty.style.display = 'none';
-      nonHostUsers.forEach((u, i) => {
+     nonHostUsers.forEach((u) => {
+    const i = users.findIndex(us => us.id === u.id);
         const isHost = room && u.id === room.host;
         const row = document.createElement('div');
         row.className = 'user-row';
