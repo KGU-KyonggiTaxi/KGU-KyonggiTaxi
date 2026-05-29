@@ -267,8 +267,16 @@
       card.innerHTML = html;
     }
 
-    function enterRoom(roomId) {
+    async function enterRoom(roomId) {
+        const nickname = store.get('nickname') || '';
         try { store.set('currentRoomId', roomId); } catch(e) {}
+        if (nickname && window.updateDoc && window.doc && window.db) {
+            try {
+                await window.updateDoc(window.doc(window.db, 'rooms', roomId), {
+                    members: window.arrayUnion(nickname)
+                });
+            } catch(e) { console.error('방 입장 업데이트 실패', e); }
+        }
         window.location.href = 'waitingRoomPage.html';
     }
 
@@ -330,7 +338,10 @@
       collection,
       addDoc,
       getDocs,
-      onSnapshot
+      onSnapshot,
+      doc,
+      updateDoc,
+      arrayUnion
     } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -351,6 +362,9 @@
     window.addDoc = addDoc;
     window.getDocs = getDocs;
     window.onSnapshot = onSnapshot;
+    window.doc = doc;
+    window.updateDoc = updateDoc;
+    window.arrayUnion = arrayUnion;
 
     onSnapshot(collection(db, "rooms"), (snapshot) => {
     window.rooms = [];
