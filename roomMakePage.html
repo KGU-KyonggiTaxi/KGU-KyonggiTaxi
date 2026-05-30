@@ -350,16 +350,12 @@
         createdAt: new Date().toISOString()
       };
 
-      const docRef = await addDoc(collection(db, "rooms"), newRoom);
+      const docRef = await window.addDoc(window.collection(window.db, "rooms"), newRoom);
       try { store.set('currentRoomId', docRef.id); } catch(e) {}
       setTimeout(() => { window.location.href = 'waitingRoomPage.html'; }, 800);
       const toast = document.getElementById('toast');
       toast.textContent = '"' + title + '" 방이 생성되었습니다! (' + people + '명)';
       toast.classList.add('show');
-
-      setTimeout(() => {
-          window.location.href = "waitingRoomPage.html";
-      }, 800);
     }
     document.getElementById('bankSelect').addEventListener('change', function() {
         this.classList.add('selected');
