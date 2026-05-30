@@ -495,7 +495,7 @@
 
         <!-- 입력 영역 -->
         <div class="input-area">
-            <div class="input-row">
+            <div class="input-row" onclick="showKeyboard()">
                 <div class="input-display" id="inputDisplay"></div>
                 <button class="send-btn" onclick="sendMessage()">
                     <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
@@ -833,6 +833,18 @@
             window.location.href = 'mainPage.html';
         }
         function closeDeletePopup() { document.getElementById('deleteOverlay').classList.add('hidden'); }
+
+        function showKeyboard() {
+            const textKb   = document.getElementById('textKeyboard');
+            const numberKb = document.getElementById('numberKeyboard');
+            if (isTextKeyboard) {
+                textKb.style.display   = 'block';
+                numberKb.style.display = 'none';
+            } else {
+                textKb.style.display   = 'none';
+                numberKb.style.display = 'block';
+            }
+        }
     </script>
 
   
