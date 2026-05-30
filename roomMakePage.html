@@ -333,6 +333,10 @@
 
       if (!title)   { alert('방 제목을 입력해주세요!'); return; }
       if (!account) { alert('계좌번호를 입력해주세요!'); return; }
+      if (!window.db || !window.addDoc || !window.collection) {
+        alert('잠시 후 다시 시도해주세요. (Firebase 로딩 중)');
+        return;
+      }
 
       // 새 방 객체 생성
       const newRoom = {
@@ -363,7 +367,7 @@
     });
   </script>
 
-  <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=e062848a51f222df20bfe4c23908ddbf&libraries=services"></script>
+  <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=e062848a51f222df20bfe4c23908ddbf&libraries=services"></script>
 
   <script>
     const mapContainer = document.getElementById('map');
