@@ -880,6 +880,8 @@
             );
             onSnapshot(msgQuery, (snapshot) => {
                 const chatArea = document.getElementById('chatArea');
+                const gogi = chatArea.querySelector('.gogi');
+                if (gogi) gogi.remove();
                 chatArea.querySelectorAll('.message-group').forEach(el => el.remove());
                 snapshot.forEach((d) => {
                     const data = d.data();
