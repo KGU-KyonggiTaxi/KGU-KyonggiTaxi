@@ -765,8 +765,16 @@
 
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Backspace') {
-                currentText = currentText.slice(0, -1);
-                document.getElementById('inputDisplay').textContent = currentText;
+                if (currentText.length > 0) {
+                    currentText = currentText.slice(0, -1);
+                    document.getElementById('inputDisplay').textContent = currentText;
+                } else {
+                    // 텍스트 없을 때 백스페이스 → 키패드 숨기기
+                    const textKb   = document.getElementById('textKeyboard');
+                    const numberKb = document.getElementById('numberKeyboard');
+                    textKb.style.display   = 'none';
+                    numberKb.style.display = 'none';
+                }
             }
         });
 
