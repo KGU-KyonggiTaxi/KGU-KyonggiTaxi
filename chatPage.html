@@ -778,6 +778,22 @@
             }
         });
 
+        history.pushState(null, '', location.href);
+        window.addEventListener('popstate', function() {
+            const textKb   = document.getElementById('textKeyboard');
+            const numberKb = document.getElementById('numberKeyboard');
+            const isHidden = textKb.style.display === 'none' && numberKb.style.display === 'none';
+            if (!isHidden) {
+                // 키패드 보이면 → 숨기기
+                textKb.style.display   = 'none';
+                numberKb.style.display = 'none';
+                history.pushState(null, '', location.href); // 다시 스택 쌓아서 페이지 이탈 방지
+            } else {
+                // 키패드 이미 숨겨져 있으면 → 이전 페이지로 이동
+                window.location.href = 'waitingRoomPage.html';
+            }
+        });
+
         function deleteText() {
             if (currentText.length > 0) {
                 currentText = currentText.slice(0, -1);
